@@ -25,14 +25,16 @@ ex) SNS 타임 피드, 증권거래 ...
 * Event time: 데이터의 발생 시간
 * Processing time: event가 시스템에서 처리되는 시간
 
-> 이상적으로는 Event time과 Processing time이 동일하면 좋겠지만, 네트워크 상황에 따라 Processing time이 Event time보다 늦고, 또한 Processing time에서 소요되는 실제 처리 시간은 일정하지 않고 들쭉날쭉 하다. 네트워크 사오항이나 서버의 CPU, I/O 상황이 그때마다 차이가 나기 때문이다.
+> 이상적으로는 Event time과 Processing time이 동일하면 좋겠지만, 네트워크 상황에 따라 Processing time이 Event time보다 늦고, 또한 Processing time에서 소요되는 실제 처리 시간은 일정하지 않고 들쭉날쭉 하다. 네트워크 상황이나 서버의 CPU, I/O 상황이 그때마다 차이가 나기 때문이다.
 
 <br>
 
    ![img](https://t1.daumcdn.net/cfile/tistory/21328C3E577A10D50A) 
 
 ```
-위의 그래프에서 Skew는 Event time과 Processing time간의 간격을 의미한다. Processing time에서 3초에는 Event time 1초에서 발생한 데이터를 처리하고 있는데, Event time에서는 3초 시간의 데이터가 발생하고 있기 때문에 Skew는 2초가 된다. 
+위의 그래프에서 Skew는 Event time과 Processing time간의 간격을 의미한다. 
+Processing time에서 3초에는 Event time 1초에서 발생한 데이터를 처리하고 있는데, 
+Event time에서는 3초 시간의 데이터가 발생하고 있기 때문에 Skew는 2초가 된다. 
 ```
 
 <br>
@@ -49,7 +51,7 @@ Bounded data는 이미 저장되어 있는 데이터를 처리하는 것이기 �
 
 ### 5. Unbounded data의 처리
 
-스트리밍 데이터로 **배치(batch)**와 **스트리밍(streaming)**의 두가지 패턴으로 처리한다.
+스트리밍 데이터로 **배치(batch)** 와 **스트리밍(streaming)** 의 두가지 패턴으로 처리한다.
 
 > - Fixed Windows: 스트리밍 데이터를 일정 시간 단위로 모아 처리하는 방식(Batch). 구현이 간단하지만 데이터 수집 후 처리가 되기 때문에 실시간 처리성이 떨어진다.
 >
@@ -63,25 +65,25 @@ Bounded data는 이미 저장되어 있는 데이터를 처리하는 것이기 �
 
 <br>
 
-#### 6. Streaming 처리 방법
+### 6. Streaming 처리 방법
 
-##### 6-1) Time agnostic
+#### 6-1) Time agnostic
 
 : 데이터가 시간 속성을 가지고 있지 않은 데이터 이다. <u>들어오는 순서대로 처리</u>를 하면 된다.
 
 <br>
 
-##### 6-2) Filtering
+#### 6-2) Filtering
 
 : 들어오는 데이터 중 **특정 데이터만 필터링**하여 저장하는 구조
 
  ![img](https://t1.daumcdn.net/cfile/tistory/227B743E577A10D838) 
 
-###### ex) 웹 로깅 데이터를 수집해서 특정 IP나 국가 대역에서 들어오는 데이터만 필터링해서 저장하는 시나리오
+ex) 웹 로깅 데이터를 수집해서 특정 IP나 국가 대역에서 들어오는 데이터만 필터링해서 저장하는 시나리오
 
 <br>
 
-##### 6-3) Inner joins (교집합)
+#### 6-3) Inner joins (교집합)
 
 : 두 개의 Unbounded data에서 들어오는 값을 서로 비교하여 매칭시켜서 값을 구하는 방식이다. 양쪽 스트림에서 데이터가 항상 같은 시간에 도착하는 것이 아니기 때문에 아래와 같은 매커니즘이 필요하다.
 
@@ -95,21 +97,21 @@ A 도착 => B 도착할 때까지 버퍼에 저장 => B 도착 => 조인하여 �
 
 <br>
 
-###### ex) 모바일 뉴스 앱이 있다고 가정할때, 뉴스 앱에서는 사용자가 어떤 컨텐츠를 보는지에 대한 데이타를 수집 전송하고, 지도 앱에서는 현재 사용자의 위치를 수집해서 전송한다고 하자. 
+ex) 모바일 뉴스 앱이 있다고 가정할때, 뉴스 앱에서는 사용자가 어떤 컨텐츠를 보는지에 대한 데이타를 수집 전송하고, 지도 앱에서는 현재 사용자의 위치를 수집해서 전송한다고 하자. 
 
-###### 이 경우 사용자별 뉴스 뷰에 대한 Unbounded data 와, 사용자별 위치에 대한 Unbounded data 가 있게 되는데, 이 두개의 데이타 스트림을 사용자로 Inner Join을 하면 사용자가 어떤 위치에서 어떤 뉴스를 보는지에 대해서 분석을 할 수 있다. 
+이 경우 사용자별 뉴스 뷰에 대한 Unbounded data 와, 사용자별 위치에 대한 Unbounded data 가 있게 되는데, 이 두개의 데이타 스트림을 사용자로 Inner Join을 하면 사용자가 어떤 위치에서 어떤 뉴스를 보는지에 대해서 분석을 할 수 있다. 
 
 <br>
 
-##### 6-4) Approximation algorithms 근사치 추정
+#### 6-4) Approximation algorithms 근사치 추정
 
 : 시급한 분석이 필요한 경우, 전체 데이터를 분석하지 않고 <u>일부만 분석</u>하거나, 대략적인 데이터의 <u>근사값</u>만을 구하는 방법으로 대표적으로 K-means 나 Approximate Top-N등이 있다.
 
 ex) VOD에서 최근 10분간 인기있는 비디오 목록, 12시간 동안 가장 많이 팔린 제품
 
+<br>
 
-
-##### 6-5) Windowing
+#### 6-5) Windowing
 
 : 스트리밍 데이터를 처리할 때 일정 시간 간격으로 처리하는 것을 정의
 
@@ -152,9 +154,11 @@ ex) VOD에서 최근 10분간 인기있는 비디오 목록, 12시간 동안 가
 
 
 ```
-1) Buffering: 늦게 도착한 데이터를 처리해야 하기 때문에 윈도우를 일정시간동안 유지해야 한다. 이를 위해서 메모리나 별도의 디스크 공간을 사용한다.
+1) Buffering: 늦게 도착한 데이터를 처리해야 하기 때문에 윈도우를 일정시간동안 유지해야 한다. 
+이를 위해서 메모리나 별도의 디스크 공간을 사용한다.
 
-2) Completeness: Buffering을 적용했으면 얼마 동안이나 버퍼를 유지해야 하는가? 라는 문제가 발생한다. 즉 해당 시간에 발생한 모든 데이터가 모두 도착이 완료(Completeness)되는 시간을 결정하는 것이다. 
+2) Completeness: Buffering을 적용했으면 얼마 동안이나 버퍼를 유지해야 하는가? 라는 문제가 발생한다. 
+즉 해당 시간에 발생한 모든 데이터가 모두 도착이 완료(Completeness)되는 시간을 결정하는 것이다. 
 ```
 
 <br>
